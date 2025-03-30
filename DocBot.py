@@ -27,16 +27,17 @@ def save_sessions(session_dict):
         json.dump(session_dict, file, indent=4)
 
 # Load sessions when the app starts
+global session_dict
 session_dict = load_sessions()
 
 ### --- ONBOARDING FUNCTION --- ###
 def first_interaction(message, user):
     questions = {
-        "condition": "🩺 What condition do you have? (Type II Diabetes, Crohn’s disease, or both)",
+        "condition": "🏪 What condition do you have? (Type II Diabetes, Crohn’s disease, or both)",
         "age": "🎂 How old are you?",
         "weight": "⚖️ What's your weight (in kg)?",
         "medications": "💊 What medications are you currently taking?",
-        "emergency_contact": "📞 Who should we contact in case of emergency? (Name + Phone)",
+        "emergency_contact": "📱 Who should we contact in case of emergency? (Name + Phone)",
         "news_pref": "📰 What kind of weekly health updates would you like?\nOptions: Instagram Reel 📱, TikTok 🎵, or Research News 🧪"
     }
 
@@ -48,7 +49,9 @@ def first_interaction(message, user):
         return {"text": questions["age"]}
 
     elif stage == "age":
-        session_dict[user]["age"] = message
+        if not message.isdigit():
+            return {"text": "❗ Please enter a valid age (a number)."}
+        session_dict[user]["age"] = int(message)
         session_dict[user]["onboarding_stage"] = "weight"
         return {"text": questions["weight"]}
 
@@ -73,7 +76,7 @@ def first_interaction(message, user):
         return {"text": "✅ Onboarding complete! You're all set. You can now do daily check-ins or request help anytime."}
 
     else:
-        return llm_daily(message, user, session_dict)  # ✅ make sure to return this!
+        return llm_daily(message, user, session_dict)
 
 ### --- DAILY CHECK-IN DEBUG --- ###
 def llm_daily(message, user, session_dict):
@@ -85,16 +88,35 @@ def llm_daily(message, user, session_dict):
 ### --- FLASK ROUTE TO HANDLE USER REQUESTS --- ###
 @app.route('/query', methods=['POST'])
 def main():
+    global session_dict
     data = request.get_json()
     message = data.get("text", "").strip()
     user = data.get("user_name", "Unknown")
 
-    
+    # Reload sessions from file
+    session_dict = load_sessions()
+
     print("Current session dict:", session_dict)
     print("Current user:", user)
 
-    # Create a new session if user is new or restarted
-    if user not in session_dict or "restart" in message.lower():
+    # Restart handling
+    if "restart" in message.lower():
+        print("Restarting user:", user)
+        session_dict[user] = {
+            "session_id": f"{user}-session",
+            "onboarding_stage": "condition",
+            "condition": "",
+            "age": 0,
+            "weight": 0,
+            "medications": [],
+            "emergency_contact": "",
+            "news_pref": ""
+        }
+        save_sessions(session_dict)
+        return jsonify({"text": "🔄 Restarted onboarding. " + first_interaction("", user)["text"]})
+
+    # Initialize user session if not present
+    if user not in session_dict:
         print("new user", user)
         session_dict[user] = {
             "session_id": f"{user}-session",
@@ -108,7 +130,15 @@ def main():
         }
         save_sessions(session_dict)
 
-    # Call appropriate flow
+        if message.lower() in ["hi", "hello", "hey"]:
+            welcome_message = (
+                "👋 Hi, I'm DocBot — your health assistant!\n"
+                "I'll help you track symptoms, remind you about meds 💊, and send you health tips 📰.\n\n"
+                "Let’s start with a few quick questions.\n" +
+                first_interaction("", user)["text"]
+            )
+            return jsonify({"text": welcome_message})
+
     if session_dict[user]["onboarding_stage"] != "done":
         response = first_interaction(message, user)
     else:
@@ -124,10 +154,9 @@ if __name__ == "__main__":
 # import os
 # import json
 # import requests
-# from flask import Flask, request, jsonify , Response
+# from flask import Flask, request, jsonify, Response
 # from llmproxy import generate
 # import re
-
 
 # app = Flask(__name__)
 
@@ -142,7 +171,7 @@ if __name__ == "__main__":
 #             try:
 #                 return json.load(file)
 #             except json.JSONDecodeError:
-#                 return {}  
+#                 return {}
 #     return {}
 
 # def save_sessions(session_dict):
@@ -150,9 +179,10 @@ if __name__ == "__main__":
 #     with open(SESSION_FILE, "w") as file:
 #         json.dump(session_dict, file, indent=4)
 
-
 # # Load sessions when the app starts
 # session_dict = load_sessions()
+
+# ### --- ONBOARDING FUNCTION --- ###
 # def first_interaction(message, user):
 #     questions = {
 #         "condition": "🩺 What condition do you have? (Type II Diabetes, Crohn’s disease, or both)",
@@ -179,13 +209,11 @@ if __name__ == "__main__":
 #         session_dict[user]["weight"] = message
 #         session_dict[user]["onboarding_stage"] = "medications"
 #         return {"text": questions["medications"]}
-    
+
 #     elif stage == "medications":
-#         # Split input by comma and strip whitespace
 #         session_dict[user]["medications"] = [med.strip() for med in message.split(",")]
 #         session_dict[user]["onboarding_stage"] = "emergency_contact"
 #         return {"text": questions["emergency_contact"]}
-
 
 #     elif stage == "emergency_contact":
 #         session_dict[user]["emergency_contact"] = message
@@ -198,31 +226,27 @@ if __name__ == "__main__":
 #         return {"text": "✅ Onboarding complete! You're all set. You can now do daily check-ins or request help anytime."}
 
 #     else:
-#         llm_daily(message, user, session_dict)
+#         return llm_daily(message, user, session_dict)  # ✅ make sure to return this!
 
-
+# ### --- DAILY CHECK-IN DEBUG --- ###
 # def llm_daily(message, user, session_dict):
-
+#     print("🔍 DEBUG: Current user data:")
 #     for key, value in session_dict[user].items():
 #         print(f"{key}: {value}")
-    
-#     return {"text": "IN LLM DAILY"}
+#     return {"text": "📆 IN LLM DAILY"}
 
 # ### --- FLASK ROUTE TO HANDLE USER REQUESTS --- ###
-# # """Handles user messages and manages session storage."""
 # @app.route('/query', methods=['POST'])
 # def main():
 #     data = request.get_json()
 #     message = data.get("text", "").strip()
 #     user = data.get("user_name", "Unknown")
 
-#     # Load sessions at the beginning of each request
-#     session_dict = load_sessions()
     
 #     print("Current session dict:", session_dict)
 #     print("Current user:", user)
 
-#     # Initialize user session if it doesn't exist
+#     # Create a new session if user is new or restarted
 #     if user not in session_dict or "restart" in message.lower():
 #         print("new user", user)
 #         session_dict[user] = {
@@ -235,19 +259,17 @@ if __name__ == "__main__":
 #             "emergency_contact": "",
 #             "news_pref": ""
 #         }
-#         save_sessions(session_dict)  # Save immediately after creating new session
-#         # return jsonify({"text": questions["condition"]})
+#         save_sessions(session_dict)
 
+#     # Call appropriate flow
 #     if session_dict[user]["onboarding_stage"] != "done":
 #         response = first_interaction(message, user)
 #     else:
 #         response = llm_daily(message, user, session_dict)
-    
-#     # Save session data at the end of the request
+
 #     save_sessions(session_dict)
 #     return jsonify(response)
 
-
-# ### --- RUN THE FLASK APP --- ###
+# ### --- RUN FLASK APP --- ###
 # if __name__ == "__main__":
 #     app.run(host="0.0.0.0", port=5001)
