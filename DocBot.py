@@ -34,7 +34,9 @@ session_dict = load_sessions()
 def first_interaction(message, user):
     questions = {
         "condition": "🏪 What condition do you have? (Type II Diabetes, Crohn’s disease, or both)",
-        "age": "🎂 How old are you?",
+        "age": "👋 Hi, I'm DocBot — your health assistant!\n"
+                "I'll help you track symptoms, remind you about meds 💊, and send you health tips 📰.\n\n"
+                "Let’s start with a few quick questions.\n 🎂 How old are you?",
         "weight": "⚖️ What's your weight (in kg)?",
         "medications": "💊 What medications are you currently taking?",
         "emergency_contact": "📱 Who should we contact in case of emergency? (Name + Phone)",
@@ -44,6 +46,7 @@ def first_interaction(message, user):
     stage = session_dict[user].get("onboarding_stage", "condition")
 
     if stage == "condition":
+        print("hello")
         session_dict[user]["condition"] = message
         session_dict[user]["onboarding_stage"] = "age"
         return {"text": questions["age"]}
@@ -129,15 +132,6 @@ def main():
             "news_pref": ""
         }
         save_sessions(session_dict)
-
-        if message.lower() in ["hi", "hello", "hey"]:
-            welcome_message = (
-                "👋 Hi, I'm DocBot — your health assistant!\n"
-                "I'll help you track symptoms, remind you about meds 💊, and send you health tips 📰.\n\n"
-                "Let’s start with a few quick questions.\n" +
-                first_interaction("", user)["text"]
-            )
-            return jsonify({"text": welcome_message})
 
     if session_dict[user]["onboarding_stage"] != "done":
         response = first_interaction(message, user)
