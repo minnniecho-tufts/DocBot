@@ -89,7 +89,6 @@ def main():
     message = data.get("text", "").strip()
     user = data.get("user_name", "Unknown")
 
-    session_dict = load_sessions()
     
     print("Current session dict:", session_dict)
     print("Current user:", user)
