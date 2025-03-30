@@ -75,11 +75,14 @@ def first_interaction(message, user):
 
     elif stage == "news_pref":
         session_dict[user]["news_pref"] = [pref.strip() for pref in message.split(",")]
+        session_dict[user]["onboarding_stage"] = "condition"
+        return {"text": questions["condition"]}
+    
+    elif stage == "condition":
+        session_dict[user]["condition"] = message
         session_dict[user]["onboarding_stage"] = "done"
-        return {"text": "✅ Onboarding complete! You're all set. You can now do daily check-ins or request help anytime."}
-
-    else:
         return llm_daily(message, user, session_dict)
+
 
 ### --- DAILY CHECK-IN DEBUG --- ###
 def llm_daily(message, user, session_dict):
