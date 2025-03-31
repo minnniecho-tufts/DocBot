@@ -125,39 +125,45 @@ def first_interaction(message, user):
 
         session_dict[user]["news_pref"] = [message]
         session_dict[user]["onboarding_stage"] = "condition"
-        return {"text": questions["condition"]}
+
+
+        buttons = [
+            {
+                "type": "button",
+                "text": "Crohn's",
+                "msg": "Crohn's",
+                "msg_in_chat_window": True,
+                "msg_processing_type": "sendMessage",
+                "button_id": "choose_condition_crohns"
+            },
+            {
+                "type": "button",
+                "text": "Type II Diabetes",
+                "msg": "Type II Diabetes",
+                "msg_in_chat_window": True,
+                "msg_processing_type": "sendMessage",
+                "button_id": "choose_condition_diabetes"
+            }
+        ]
+        return {
+            "text": "🏪 What condition do you have?",
+            "attachments": [
+                {
+                    "collapsed": False,
+                    "color": "#e3e3e3",
+                    "actions": buttons
+                }
+            ]
+        }
     
     elif stage == "condition":
         valid_conditions = ["Crohn's", "Type II Diabetes"]
 
         if message not in valid_conditions:
-            return {
-                "text": "🩺 Please choose your condition:",
-                "attachments": [
-                    {
-                        "text": "Select one of the following:",
-                        "actions": [
-                            {
-                                "type": "button",
-                                "text": "Crohn's",
-                                "msg": "Crohn's",
-                                "msg_in_chat_window": True,
-                                "actionId": "choose_condition_crohns"
-                            },
-                            {
-                                "type": "button",
-                                "text": "Type II Diabetes",
-                                "msg": "Type II Diabetes",
-                                "msg_in_chat_window": True,
-                                "actionId": "choose_condition_diabetes"
-                            }
-                        ]
-                    }
-                ]
-            }
+                    return {"text": "Please click one of the buttons above to continue."}
 
-        # Store the selected condition and finish onboarding
-        session_dict[user]["condition"] = message
+        session_dict[user]["condition"] = [message]
+
         session_dict[user]["onboarding_stage"] = "done"
         return llm_daily(message, user, session_dict)
 
