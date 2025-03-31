@@ -76,50 +76,56 @@ def first_interaction(message, user):
         valid_options = ["YouTube", "Instagram Reel", "TikTok", "Research News"]
 
         if message not in valid_options:
+            buttons = [
+                {
+                    "type": "button",
+                    "text": "🎥 YouTube",
+                    "msg": "YouTube",
+                    "msg_in_chat_window": True,
+                    "msg_processing_type": "sendMessage",
+                    "button_id": "youtube_button"
+                },
+                {
+                    "type": "button",
+                    "text": "📸 Instagram Reel",
+                    "msg": "Instagram Reel",
+                    "msg_in_chat_window": True,
+                    "msg_processing_type": "sendMessage",
+                    "button_id": "insta_button"
+                },
+                {
+                    "type": "button",
+                    "text": "🎵 TikTok",
+                    "msg": "TikTok",
+                    "msg_in_chat_window": True,
+                    "msg_processing_type": "sendMessage",
+                    "button_id": "tiktok_button"
+                },
+                {
+                    "type": "button",
+                    "text": "🧪 Research News",
+                    "msg": "Research News",
+                    "msg_in_chat_window": True,
+                    "msg_processing_type": "sendMessage",
+                    "button_id": "research_button"
+                }
+            ]
+
             return {
                 "text": "📰 What kind of weekly health updates would you like?",
                 "attachments": [
                     {
-                        "text": "Choose one:",
-                        "actions": [
-                            {
-                                "type": "button",
-                                "text": "YouTube",
-                                "msg": "YouTube",
-                                "msg_in_chat_window": True,
-                                "actionId": "choose_news_youtube"
-                            },
-                            {
-                                "type": "button",
-                                "text": "Instagram Reel",
-                                "msg": "Instagram Reel",
-                                "msg_in_chat_window": True,
-                                "actionId": "choose_news_ig"
-                            },
-                            {
-                                "type": "button",
-                                "text": "TikTok",
-                                "msg": "TikTok",
-                                "msg_in_chat_window": True,
-                                "actionId": "choose_news_tiktok"
-                            },
-                            {
-                                "type": "button",
-                                "text": "Research News",
-                                "msg": "Research News",
-                                "msg_in_chat_window": True,
-                                "actionId": "choose_news_research"
-                            }
-                        ]
+                        "collapsed": False,
+                        "color": "#e3e3e3",
+                        "actions": buttons
                     }
                 ]
             }
 
-        # Store selected news preference
+        # Store selected option and move on
         session_dict[user]["news_pref"] = [message]
         session_dict[user]["onboarding_stage"] = "condition"
         return {"text": questions["condition"]}
-    
     elif stage == "condition":
         valid_conditions = ["Crohn's", "Type II Diabetes"]
 
