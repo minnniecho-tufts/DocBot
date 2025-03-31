@@ -49,32 +49,13 @@ def first_interaction(message, user):
         session_dict[user]["condition"] = message
         session_dict[user]["onboarding_stage"] = "age"
         return {"text": questions["age"]}
+
     elif stage == "age":
-        # If the user hasn't selected yet, send the age picker
         if not message.isdigit():
-            return {
-                "text": "🎂 Please select your age:",
-                "attachments": [
-                    {
-                        "text": "Choose your age:",
-                        "actions": [
-                            {
-                                "type": "select",
-                                "text": "Select age",
-                                "options": [
-                                    {"text": str(age), "value": str(age)} for age in range(10, 91, 5)
-                                ],
-                                "actionId": "select_age"
-                            }
-                        ]
-                    }
-                ]
-            }
-        # Store selected age
+            return {"text": "❗ Please enter a valid age (a number)."}
         session_dict[user]["age"] = int(message)
         session_dict[user]["onboarding_stage"] = "weight"
         return {"text": questions["weight"]}
-
 
     elif stage == "weight":
         session_dict[user]["weight"] = message
@@ -92,14 +73,87 @@ def first_interaction(message, user):
         return {"text": questions["news_pref"]}
 
     elif stage == "news_pref":
-        session_dict[user]["news_pref"] = [pref.strip() for pref in message.split(",")]
+        valid_options = ["YouTube", "Instagram Reel", "TikTok", "Research News"]
+
+        if message not in valid_options:
+            return {
+                "text": "📰 What kind of weekly health updates would you like?",
+                "attachments": [
+                    {
+                        "text": "Choose one:",
+                        "actions": [
+                            {
+                                "type": "button",
+                                "text": "YouTube",
+                                "msg": "YouTube",
+                                "msg_in_chat_window": True,
+                                "actionId": "choose_news_youtube"
+                            },
+                            {
+                                "type": "button",
+                                "text": "Instagram Reel",
+                                "msg": "Instagram Reel",
+                                "msg_in_chat_window": True,
+                                "actionId": "choose_news_ig"
+                            },
+                            {
+                                "type": "button",
+                                "text": "TikTok",
+                                "msg": "TikTok",
+                                "msg_in_chat_window": True,
+                                "actionId": "choose_news_tiktok"
+                            },
+                            {
+                                "type": "button",
+                                "text": "Research News",
+                                "msg": "Research News",
+                                "msg_in_chat_window": True,
+                                "actionId": "choose_news_research"
+                            }
+                        ]
+                    }
+                ]
+            }
+
+        # Store selected news preference
+        session_dict[user]["news_pref"] = [message]
         session_dict[user]["onboarding_stage"] = "condition"
         return {"text": questions["condition"]}
     
     elif stage == "condition":
+        valid_conditions = ["Crohn's", "Type II Diabetes"]
+
+        if message not in valid_conditions:
+            return {
+                "text": "🩺 Please choose your condition:",
+                "attachments": [
+                    {
+                        "text": "Select one of the following:",
+                        "actions": [
+                            {
+                                "type": "button",
+                                "text": "Crohn's",
+                                "msg": "Crohn's",
+                                "msg_in_chat_window": True,
+                                "actionId": "choose_condition_crohns"
+                            },
+                            {
+                                "type": "button",
+                                "text": "Type II Diabetes",
+                                "msg": "Type II Diabetes",
+                                "msg_in_chat_window": True,
+                                "actionId": "choose_condition_diabetes"
+                            }
+                        ]
+                    }
+                ]
+            }
+
+        # Store the selected condition and finish onboarding
         session_dict[user]["condition"] = message
         session_dict[user]["onboarding_stage"] = "done"
         return llm_daily(message, user, session_dict)
+
 
 
 ### --- DAILY CHECK-IN DEBUG --- ###
