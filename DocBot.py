@@ -39,7 +39,7 @@ def first_interaction(message, user):
                 "Let’s start with a few quick questions.\n 🎂 How old are you?",
         "weight": "⚖️ What's your weight (in kg)?",
         "medications": "💊 What medications are you currently taking?",
-        "emergency_contact": "📱 Who should we contact in case of emergency? (Name + Phone)",
+        "emergency_contact": "📱 Who should we contact in case of emergency? [email]",
         "news_pref": "📰 What kind of weekly health updates would you like?\nOptions: Instagram Reel 📱, TikTok 🎵, or Research News 🧪"
     }
 
@@ -70,62 +70,63 @@ def first_interaction(message, user):
     elif stage == "emergency_contact":
         session_dict[user]["emergency_contact"] = message
         session_dict[user]["onboarding_stage"] = "news_pref"
-        return {"text": questions["news_pref"]}
+
+        buttons = [
+            {
+                "type": "button",
+                "text": "🎥 YouTube",
+                "msg": "YouTube",
+                "msg_in_chat_window": True,
+                "msg_processing_type": "sendMessage",
+                "button_id": "youtube_button"
+            },
+            {
+                "type": "button",
+                "text": "📸 IG Reel",
+                "msg": "Instagram Reel",
+                "msg_in_chat_window": True,
+                "msg_processing_type": "sendMessage",
+                "button_id": "insta_button"
+            },
+            {
+                "type": "button",
+                "text": "🎵 TikTok",
+                "msg": "TikTok",
+                "msg_in_chat_window": True,
+                "msg_processing_type": "sendMessage",
+                "button_id": "tiktok_button"
+            },
+            {
+                "type": "button",
+                "text": "🧪 Research",
+                "msg": "Research News",
+                "msg_in_chat_window": True,
+                "msg_processing_type": "sendMessage",
+                "button_id": "research_button"
+            }
+        ]
+
+        return {
+            "text": "📰 What kind of weekly health updates would you like?",
+            "attachments": [
+                {
+                    "collapsed": False,
+                    "color": "#e3e3e3",
+                    "actions": buttons
+                }
+            ]
+        }
 
     elif stage == "news_pref":
         valid_options = ["YouTube", "Instagram Reel", "TikTok", "Research News"]
 
         if message not in valid_options:
-            buttons = [
-                {
-                    "type": "button",
-                    "text": "🎥 YouTube",
-                    "msg": "YouTube",
-                    "msg_in_chat_window": True,
-                    "msg_processing_type": "sendMessage",
-                    "button_id": "youtube_button"
-                },
-                {
-                    "type": "button",
-                    "text": "📸 Instagram Reel",
-                    "msg": "Instagram Reel",
-                    "msg_in_chat_window": True,
-                    "msg_processing_type": "sendMessage",
-                    "button_id": "insta_button"
-                },
-                {
-                    "type": "button",
-                    "text": "🎵 TikTok",
-                    "msg": "TikTok",
-                    "msg_in_chat_window": True,
-                    "msg_processing_type": "sendMessage",
-                    "button_id": "tiktok_button"
-                },
-                {
-                    "type": "button",
-                    "text": "🧪 Research News",
-                    "msg": "Research News",
-                    "msg_in_chat_window": True,
-                    "msg_processing_type": "sendMessage",
-                    "button_id": "research_button"
-                }
-            ]
+            return {"text": "Please click one of the buttons above to continue."}
 
-            return {
-                "text": "📰 What kind of weekly health updates would you like?",
-                "attachments": [
-                    {
-                        "collapsed": False,
-                        "color": "#e3e3e3",
-                        "actions": buttons
-                    }
-                ]
-            }
-
-        # Store selected option and move on
         session_dict[user]["news_pref"] = [message]
         session_dict[user]["onboarding_stage"] = "condition"
         return {"text": questions["condition"]}
+    
     elif stage == "condition":
         valid_conditions = ["Crohn's", "Type II Diabetes"]
 
