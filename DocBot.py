@@ -46,17 +46,35 @@ def first_interaction(message, user):
     stage = session_dict[user].get("onboarding_stage", "condition")
 
     if stage == "condition":
-        print("hello")
         session_dict[user]["condition"] = message
         session_dict[user]["onboarding_stage"] = "age"
         return {"text": questions["age"]}
-
     elif stage == "age":
+        # If the user hasn't selected yet, send the age picker
         if not message.isdigit():
-            return {"text": "❗ Please enter a valid age (a number)."}
+            return {
+                "text": "🎂 Please select your age:",
+                "attachments": [
+                    {
+                        "text": "Choose your age:",
+                        "actions": [
+                            {
+                                "type": "select",
+                                "text": "Select age",
+                                "options": [
+                                    {"text": str(age), "value": str(age)} for age in range(10, 91, 5)
+                                ],
+                                "actionId": "select_age"
+                            }
+                        ]
+                    }
+                ]
+            }
+        # Store selected age
         session_dict[user]["age"] = int(message)
         session_dict[user]["onboarding_stage"] = "weight"
         return {"text": questions["weight"]}
+
 
     elif stage == "weight":
         session_dict[user]["weight"] = message
