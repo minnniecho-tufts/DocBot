@@ -124,7 +124,7 @@ def first_interaction(message, user):
             return {"text": "Please click one of the buttons above to continue."}
 
         session_dict[user]["news_pref"] = [message]
-        session_dict[user]["onboarding_stage"] = "condition"
+        session_dict[user]["onboarding_stage"] = "condition1"
 
 
         buttons = [
@@ -156,12 +156,12 @@ def first_interaction(message, user):
             ]
         }
     
-    elif stage == "condition":
+    elif stage == "condition1":
         print(message)
         valid_conditions = ["Crohn's", "Type II Diabetes"]
 
-        # if message not in valid_conditions:
-        #             return {"text": "Please click one of the buttons above to continue."}
+        if message not in valid_conditions:
+                    return {"text": "Please click one of the buttons above to continue."}
 
         session_dict[user]["condition"] = message
         session_dict[user]["onboarding_stage"] = "done"
