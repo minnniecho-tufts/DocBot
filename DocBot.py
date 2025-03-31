@@ -159,12 +159,13 @@ def first_interaction(message, user):
     elif stage == "condition":
         valid_conditions = ["Crohn's", "Type II Diabetes"]
 
-        if message not in valid_conditions:
-                    return {"text": "Please click one of the buttons above to continue."}
+        # if message not in valid_conditions:
+        #             return {"text": "Please click one of the buttons above to continue."}
 
-        session_dict[user]["condition"] = [message]
-
+        session_dict[user]["condition"] = message
+        
         session_dict[user]["onboarding_stage"] = "done"
+
         return llm_daily(message, user, session_dict)
 
 
