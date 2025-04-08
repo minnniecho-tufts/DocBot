@@ -32,6 +32,7 @@ session_dict = load_sessions()
 
 ### --- ONBOARDING FUNCTION --- ###
 def first_interaction(message, user):
+    print("MY MES" + message)
     questions = {
         "condition": "🏪 What condition do you have? (Type II Diabetes, Crohn’s disease, or both)",
         "age": "👋 Hi, I'm DocBot — your health assistant!\n"
@@ -63,7 +64,7 @@ def first_interaction(message, user):
         if not cleaned.replace('.', '', 1).isdigit():
             return {"text": "❗ Please enter a valid weight (a number in kg)."}
         
-        session_dict[user]["weight"] = float(cleaned)
+        session_dict[user]["weight"] = cleaned
         session_dict[user]["onboarding_stage"] = "medications"
         return {"text": questions["medications"]}
 
