@@ -58,7 +58,12 @@ def first_interaction(message, user):
         return {"text": questions["weight"]}
 
     elif stage == "weight":
-        session_dict[user]["weight"] = message
+        cleaned = message.lower().replace("kg", "").strip()
+
+        if not cleaned.replace('.', '', 1).isdigit():
+            return {"text": "❗ Please enter a valid weight (a number in kg)."}
+        
+        session_dict[user]["weight"] = float(cleaned)
         session_dict[user]["onboarding_stage"] = "medications"
         return {"text": questions["medications"]}
 
@@ -172,7 +177,6 @@ def first_interaction(message, user):
 
 ### --- DAILY CHECK-IN DEBUG --- ###
 def llm_daily(message, user, session_dict):
-    print("🔍 DEBUG: Current user data:")
     for key, value in session_dict[user].items():
         print(f"{key}: {value}")
     return {"text": "📆 IN LLM DAILY"}
